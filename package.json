@@ -22,7 +22,9 @@
   },
   "homepage": "https://github.com/marcelohoficial/PizzaLab#readme",
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "mongodb": "^6.16.0",
+    "mongoose": "^8.14.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"
