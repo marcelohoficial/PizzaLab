@@ -2,6 +2,10 @@
 
 API para listar pizzas no cardápio da PizzaLab.
 
+## Vídeo demonstração
+
+https://youtu.be/McdxGAqocUA
+
 ## Requisitos
 
 - Node.js
@@ -48,14 +52,6 @@ Retorna uma mensagem de boas-vindas
 curl http://localhost:3000/
 ```
 
-### GET /pizzas
-
-Lista todas as pizzas disponíveis
-
-```bash
-curl http://localhost:3000/pizzas
-```
-
 ### POST /entrar
 
 Rota de login
@@ -64,12 +60,12 @@ Rota de login
 curl -X POST http://localhost:3000/entrar
 ```
 
-### POST /cadastrar
+### POST /user
 
 Rota de cadastro
 
 ```bash
-curl -X POST http://localhost:3000/cadastrar
+curl -X POST http://localhost:3000/user
 ```
 
 ## Tecnologias utilizadas
