@@ -12,6 +12,10 @@ const options = {
     },
     servers: [
       {
+        url: "https://pizzalab-l0qm.onrender.com",
+        description: "Servidor de Produção",
+      },
+      {
         url: "http://localhost:3000",
         description: "Servidor de Desenvolvimento",
       },
