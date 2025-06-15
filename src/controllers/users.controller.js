@@ -32,19 +32,19 @@ const createClient = async (req, res) => {
       return res.status(400).json({ error: "Preencha todos os campos" });
     }
 
-    const { name, phone } = req.body;
+    const { name, phone, password } = req.body;
 
     const existingClient = await Client.findOne({ phone });
     if (existingClient) {
       return res.status(400).json({ error: "Cliente já existe" });
     }
 
-    const valid = validationUser({ name, phone });
+    const valid = validationUser({ name, phone, password });
     if (valid.error) {
       return res.status(400).json({ error: valid.error });
     }
 
-    const newClient = new Client({ name, phone });
+    const newClient = new Client({ name, phone, password });
 
     await newClient.save();
 
@@ -60,10 +60,10 @@ const updateClient = async (req, res) => {
       return res.status(400).json({ error: "Preencha todos os campos" });
     }
 
-    const { name, phone } = req.body;
+    const { name, phone, password } = req.body;
     const updatedClient = await Client.findByIdAndUpdate(
       req.params.id,
-      { name, phone },
+      { name, phone, password },
       { new: true, runValidators: true }
     );
 

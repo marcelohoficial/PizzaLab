@@ -6,21 +6,125 @@ const {
   updateClient,
   deleteClient,
 } = require("../controllers/users.controller");
+const { autenticarJWT } = require("../middlewares/auth");
 const router = express.Router();
 
-// Listar todos os clientes
-router.get("/", getAllClients);
+/**
+ * @swagger
+ * /user:
+ *   get:
+ *     tags: [Usuários]
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Listar todos os clientes
+ *     description: Retorna uma lista de todos os clientes cadastrados.
+ *     responses:
+ *       200:
+ *         description: Lista de clientes retornada com sucesso
+ *       401:
+ *         description: Não autorizado - Token inválido ou expirado
+ *   post:
+ *     tags: [Usuários]
+ *     summary: Cadastrar um novo cliente
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Cliente atualizado com sucesso
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Cliente não encontrado
+ *
+ * /user/{id}:
+ *   get:
+ *     tags: [Usuários]
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Buscar um cliente específico
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Cliente encontrado com sucesso
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Cliente não encontrado
+ *   put:
+ *     tags: [Usuários]
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Atualizar um cliente
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               address:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Cliente atualizado com sucesso
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Cliente não encontrado
+ *   delete:
+ *     tags: [Usuários]
+ *     security:
+ *       - bearerAuth: []
+ *     summary: Deletar um cliente
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Cliente deletado com sucesso
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Cliente não encontrado
+ */
 
-// Mostrar um cliente específico
-router.get("/:id", getClientById);
+router.get("/", autenticarJWT, getAllClients);
 
-// Criar um novo cliente
+router.get("/:id", autenticarJWT, getClientById);
+
 router.post("/", createClient);
 
-// Atualizar um cliente existente
-router.put("/:id", updateClient);
+router.put("/:id", autenticarJWT, updateClient);
 
-// Deletar um cliente
-router.delete("/:id", deleteClient);
+router.delete("/:id", autenticarJWT, deleteClient);
 
 module.exports = usersRoutes = router;

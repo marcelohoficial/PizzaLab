@@ -23,10 +23,15 @@
   "homepage": "https://github.com/marcelohoficial/PizzaLab#readme",
   "dependencies": {
     "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.16.0",
-    "mongoose": "^8.14.1"
+    "mongoose": "^8.14.1",
+    "cors": "^2.8.5",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "dotenv": "^16.5.0",
     "nodemon": "^2.0.15"
   }
 }
