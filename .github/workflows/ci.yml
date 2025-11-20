@@ -1,0 +1,90 @@
+name: CI Frontend
+
+on:
+  push:
+    branches: [front]
+  pull_request:
+    branches: [front]
+
+jobs:
+  test:
+    name: Instalar dependências e rodar testes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run tests
+        env:
+          CI: true
+        run: npm run test:ci
+
+  deploy:
+    name: Deploy para Render (após testes)
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/front'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Trigger deploy on Render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID_FRONT }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          if [ -z "$secrets.RENDER_API_KEY" ] || [ -z "$secrets.RENDER_API_KEY" ]; then
+            echo "Render secrets não configurados. Pule deploy."
+            exit 1
+          fi
+
+          echo "Criando deploy em Render para service $RENDER_SERVICE_ID ..."
+          deploy_response=$(curl -s -X POST "https://api.render.com/v1/services/${secrets.RENDER_API_KEY}/deploys" \
+            -H "Authorization: Bearer ${secrets.RENDER_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"clearCache\":false, \"metadata\": {\"commit\": \"${GITHUB_SHA}\"}}")
+
+          echo "Resposta do trigger: $deploy_response"
+
+          # Extrai deploy id (usa jq)
+          sudo apt-get update -y && sudo apt-get install -y jq >/dev/null
+          deploy_id=$(echo "$deploy_response" | jq -r .id)
+
+          if [ -z "$deploy_id" ] || [ "$deploy_id" = "null" ]; then
+            echo "Falha ao criar deploy. Saída:"
+            echo "$deploy_response"
+            exit 1
+          fi
+
+          echo "Deploy criado: $deploy_id. Aguardando conclusão (timeout 10m)..."
+
+          end=$((SECONDS + 600))
+          while [ $SECONDS -lt $end ]; do
+            status=$(curl -s -H "Authorization: Bearer ${RENDER_API_KEY}" "https://api.render.com/v1/services/${secrets.RENDER_API_KEY}/deploys/${deploy_id}" | jq -r .status)
+            echo "Status: $status"
+            if [ "$status" = "succeeded" ]; then
+              echo "Deploy concluído com sucesso."
+              exit 0
+            fi
+            if [ "$status" = "failed" ] || [ "$status" = "cancelled" ]; then
+              echo "Deploy falhou: $status"
+              exit 1
+            fi
+            sleep 10
+          done
+
+          echo "Timeout aguardando deploy."
+          exit 1
