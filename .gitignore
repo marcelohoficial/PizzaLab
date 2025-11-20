@@ -1,5 +1,8 @@
 /node_modules
 
-package-lock.json
+# package-lock.json should be tracked for CI
+!package-lock.json
+coverage/
+
 
 .env
