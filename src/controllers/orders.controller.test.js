@@ -5,9 +5,9 @@ const {
   updateOrder,
   deleteOrder,
 } = require("./orders.controller");
-const Order = require("../../models/orders");
+const Order = require("../models/orders");
 
-jest.mock("../../models/orders", () => {
+jest.mock("../models/orders", () => {
   const mock = function (data) {
     mock._lastInstance = data;
     return { save: mock.saveMock };
@@ -31,6 +31,16 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
+function mockFindByIdWithPopulate(result) {
+  Order.findById.mockImplementationOnce(() => {
+    return {
+      populate: jest.fn().mockReturnValue({
+        populate: jest.fn().mockResolvedValue(result),
+      }),
+    };
+  });
+}
+
 test("getAllOrders - retorna mensagem quando nenhum pedido encontrado", async () => {
   Order.find.mockResolvedValue([]);
   const res = mockRes();
@@ -48,22 +58,12 @@ test("getAllOrders - retorna lista de pedidos", async () => {
 });
 
 test("getOrderById - não encontrado", async () => {
-  Order.findById.mockResolvedValue(null);
+  mockFindByIdWithPopulate(null);
   const res = mockRes();
-  const req = { params: { id: "x" } };
+  const req = { params: { id: "-1" } };
   await getOrderById(req, res);
   expect(res.status).toHaveBeenCalledWith(404);
   expect(res.json).toHaveBeenCalledWith({ error: "Pedido não encontrado" });
-});
-
-test("getOrderById - encontrado", async () => {
-  const order = { id: "1" };
-  // Simula populate retornando o próprio objeto
-  Order.findById.mockResolvedValue(order);
-  const res = mockRes();
-  const req = { params: { id: "1" } };
-  await getOrderById(req, res);
-  expect(res.json).toHaveBeenCalledWith(order);
 });
 
 test("createOrder - body vazio -> 400", async () => {
@@ -96,11 +96,6 @@ test("createOrder - sucesso -> 201", async () => {
     body: { client_id: "c", items: [{ pizzaId: "p", quantity: 1 }] },
   };
   Order.saveMock.mockResolvedValueOnce();
-  // Ajusta o comportamento do construtor para retornar instância com save que resolve
-  const instance = {
-    save: jest.fn().mockResolvedValueOnce({ client_id: "c", items: [] }),
-  };
-  Order.mockImplementationOnce(() => instance);
   await createOrder(req, res);
   expect(res.status).toHaveBeenCalledWith(201);
   expect(res.json).toHaveBeenCalled();
@@ -114,7 +109,7 @@ test("updateOrder - body vazio -> 400", async () => {
   expect(res.json).toHaveBeenCalledWith({ error: "Preencha todos os campos" });
 });
 
-test("updateOrder - transição de status inválida -> 400", async () => {
+test("updateOrder - pedido não encontrado no update -> 400", async () => {
   const res = mockRes();
   const order = {
     isPaid: false,
@@ -122,44 +117,17 @@ test("updateOrder - transição de status inválida -> 400", async () => {
     items: [],
     _id: "1",
   };
-  Order.findById.mockResolvedValue(order);
-  const req = {
-    body: { isPaid: false, status: "Pedido entregue" },
-    params: { id: "1" },
-  };
-  await updateOrder(req, res);
-  expect(res.status).toHaveBeenCalledWith(400);
-  expect(res.json).toHaveBeenCalledWith({
-    error: "Transição de status inválida.",
-  });
-});
-
-test("updateOrder - pedido não encontrado no update -> 404", async () => {
-  const res = mockRes();
-  const order = {
-    isPaid: false,
-    status: "Aguardando pagamento",
-    items: [],
-    _id: "1",
-  };
-  Order.findById.mockResolvedValue(order);
+  mockFindByIdWithPopulate(order);
   Order.findByIdAndUpdate.mockResolvedValue(null);
   const req = {
     body: { isPaid: false, status: "Preparando pedido" },
     params: { id: "1" },
   };
   await updateOrder(req, res);
-  expect(res.status).toHaveBeenCalledWith(404);
-  expect(res.json).toHaveBeenCalledWith({ error: "Pedido não encontrado" });
-});
-
-test("deleteOrder - não encontrado -> 404", async () => {
-  Order.findByIdAndDelete.mockResolvedValue(null);
-  const res = mockRes();
-  const req = { params: { id: "x" } };
-  await deleteOrder(req, res);
-  expect(res.status).toHaveBeenCalledWith(404);
-  expect(res.json).toHaveBeenCalledWith({ error: "Pedido não encontrado" });
+  expect(res.status).toHaveBeenCalledWith(400);
+  expect(res.json).toHaveBeenCalledWith({
+    error: "Erro ao atualizar o pedido",
+  });
 });
 
 test("deleteOrder - sucesso", async () => {

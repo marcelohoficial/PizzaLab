@@ -5,9 +5,9 @@ const {
   updatePizza,
   deletePizza,
 } = require("./pizzas.controller");
-const Pizza = require("../../models/pizzas");
+const Pizza = require("../models/pizzas");
 
-jest.mock("../../models/pizzas", () => {
+jest.mock("../models/pizzas", () => {
   const mock = function (data) {
     mock._lastInstance = data;
     return { save: mock.saveMock };
@@ -76,10 +76,6 @@ test("createPizza - body vazio -> 400", async () => {
 test("createPizza - sucesso -> 201", async () => {
   const res = mockRes();
   const req = { body: { name: "Margherita", price: 10 } };
-  const instance = {
-    save: jest.fn().mockResolvedValueOnce({ name: "Margherita", price: 10 }),
-  };
-  Pizza.mockImplementationOnce(() => instance);
   await createPizza(req, res);
   expect(res.status).toHaveBeenCalledWith(201);
   expect(res.json).toHaveBeenCalled();

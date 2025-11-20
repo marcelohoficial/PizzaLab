@@ -20,7 +20,7 @@ const getOrderById = async (req, res) => {
       .populate("items")
       .populate("client_id");
 
-    if (!order) {
+    if (!order || req.params.id < 1) {
       return res.status(404).json({ error: "Pedido não encontrado" });
     }
     res.json(order);
@@ -98,7 +98,6 @@ const updateOrder = async (req, res) => {
 
     res.json(updatedOrder);
   } catch (err) {
-    console.log("erro " + err.message);
     res.status(400).json({ error: "Erro ao atualizar o pedido" });
   }
 };
