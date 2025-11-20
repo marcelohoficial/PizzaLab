@@ -5,9 +5,9 @@ const {
   updateClient,
   deleteClient,
 } = require("./users.controller");
-const Client = require("../../models/clients");
+const Client = require("../models/clients");
 
-jest.mock("../../models/clients", () => {
+jest.mock("../models/clients", () => {
   const mock = function (data) {
     mock._lastInstance = data;
     return { save: mock.saveMock };
@@ -109,12 +109,6 @@ test("createClient - sucesso -> 201", async () => {
   Client.findOne.mockResolvedValue(null);
   const res = mockRes();
   const req = { body: { name: "Joao", phone: "1234567890", password: "pwd" } };
-  const instance = {
-    save: jest
-      .fn()
-      .mockResolvedValueOnce({ name: "Joao", phone: "1234567890" }),
-  };
-  Client.mockImplementationOnce(() => instance);
   await createClient(req, res);
   expect(res.status).toHaveBeenCalledWith(201);
   expect(res.json).toHaveBeenCalled();
@@ -147,7 +141,7 @@ test("updateClient - validação após update falha -> 400", async () => {
   const req = {
     body: { name: "Jo", phone: "1234567890", password: "pwd" },
     params: { id: "1" },
-  }; // name inválido
+  };
   await updateClient(req, res);
   expect(res.status).toHaveBeenCalledWith(400);
   expect(res.json).toHaveBeenCalledWith({
