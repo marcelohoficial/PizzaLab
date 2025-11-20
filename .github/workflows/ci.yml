@@ -48,16 +48,16 @@ jobs:
       - name: Trigger deploy on Render
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID_BACK }}
           GITHUB_SHA: ${{ github.sha }}
         run: |
-          if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID" ]; then
+          if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID_BACK" ]; then
             echo "Render secrets não configurados. Pule deploy."
             exit 1
           fi
 
-          echo "Criando deploy em Render para service $RENDER_SERVICE_ID ..."
-          deploy_response=$(curl -s -X POST "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys" \
+          echo "Criando deploy em Render para service $RENDER_SERVICE_ID_BACK ..."
+          deploy_response=$(curl -s -X POST "https://api.render.com/v1/services/${RENDER_SERVICE_ID_BACK}/deploys" \
             -H "Authorization: Bearer ${RENDER_API_KEY}" \
             -H "Content-Type: application/json" \
             -d "{\"clearCache\":false, \"metadata\": {\"commit\": \"${GITHUB_SHA}\"}}")
@@ -78,7 +78,7 @@ jobs:
 
           end=$((SECONDS + 600))
           while [ $SECONDS -lt $end ]; do
-            status=$(curl -s -H "Authorization: Bearer ${RENDER_API_KEY}" "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys/${deploy_id}" | jq -r .status)
+            status=$(curl -s -H "Authorization: Bearer ${RENDER_API_KEY}" "https://api.render.com/v1/services/${RENDER_SERVICE_ID_BACK}/deploys/${deploy_id}" | jq -r .status)
             echo "Status: $status"
             if [ "$status" = "succeeded" ]; then
               echo "Deploy concluído com sucesso."
