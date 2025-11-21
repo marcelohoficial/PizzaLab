@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { Pizza, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { Eye, EyeOff, Lock, Mail, Pizza } from "lucide-react";
+import React, { useState } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  
+  const [error, setError] = useState("");
+
   const { user, login } = useAuth();
 
   if (user) {
@@ -18,13 +18,13 @@ export const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       await login(email, password);
     } catch (err) {
-      setError('Credenciais inválidas');
+      setError("Credenciais inválidas");
     } finally {
       setLoading(false);
     }
@@ -40,19 +40,25 @@ export const LoginPage: React.FC = () => {
                 <Pizza className="h-8 w-8 text-white" />
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Bem-vindo ao PizzaLab</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Bem-vindo ao PizzaLab
+            </h1>
             <p className="text-gray-600 mt-2">Faça login para continuar</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Email
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   id="email"
+                  name="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -64,14 +70,18 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Senha
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -83,7 +93,11 @@ export const LoginPage: React.FC = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -99,15 +113,21 @@ export const LoginPage: React.FC = () => {
               disabled={loading}
               className="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Entrando...' : 'Entrar'}
+              {loading ? "Entrando..." : "Entrar"}
             </button>
           </form>
 
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 text-center mb-2">Contas de demonstração:</p>
+            <p className="text-sm text-gray-600 text-center mb-2">
+              Contas de demonstração:
+            </p>
             <div className="space-y-1 text-xs text-gray-500">
-              <p><strong>Cliente:</strong> cliente@pizzalab.com / 123456</p>
-              <p><strong>Admin:</strong> admin@pizzalab.com / 123456</p>
+              <p>
+                <strong>Cliente:</strong> cliente@pizzalab.com / 123456
+              </p>
+              <p>
+                <strong>Admin:</strong> admin@pizzalab.com / 123456
+              </p>
             </div>
           </div>
         </div>
