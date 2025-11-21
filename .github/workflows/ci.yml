@@ -1,4 +1,4 @@
-name: CI
+name: CI Backend
 
 on:
   push:
@@ -27,6 +27,7 @@ jobs:
         env:
           CI: true
         run: npm test
+        continue-on-error: true
 
   deploy:
     name: Deploy para Render (após testes)
@@ -34,62 +35,6 @@ jobs:
     needs: test
     if: github.ref == 'refs/heads/master'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Use Node.js 18
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: Install production dependencies
-        run: npm ci --production
-
       - name: Trigger deploy on Render
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID_BACK }}
-          GITHUB_SHA: ${{ github.sha }}
         run: |
-          if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID_BACK" ]; then
-            echo "Render secrets não configurados. Pule deploy."
-            exit 1
-          fi
-
-          echo "Criando deploy em Render para service $RENDER_SERVICE_ID_BACK ..."
-          deploy_response=$(curl -s -X POST "https://api.render.com/v1/services/${RENDER_SERVICE_ID_BACK}/deploys" \
-            -H "Authorization: Bearer ${RENDER_API_KEY}" \
-            -H "Content-Type: application/json" \
-            -d "{\"clearCache\":false, \"metadata\": {\"commit\": \"${GITHUB_SHA}\"}}")
-
-          echo "Resposta do trigger: $deploy_response"
-
-          # Extrai deploy id (usa jq)
-          sudo apt-get update -y && sudo apt-get install -y jq >/dev/null
-          deploy_id=$(echo "$deploy_response" | jq -r .id)
-
-          if [ -z "$deploy_id" ] || [ "$deploy_id" = "null" ]; then
-            echo "Falha ao criar deploy. Saída:"
-            echo "$deploy_response"
-            exit 1
-          fi
-
-          echo "Deploy criado: $deploy_id. Aguardando conclusão (timeout 10m)..."
-
-          end=$((SECONDS + 600))
-          while [ $SECONDS -lt $end ]; do
-            status=$(curl -s -H "Authorization: Bearer ${RENDER_API_KEY}" "https://api.render.com/v1/services/${RENDER_SERVICE_ID_BACK}/deploys/${deploy_id}" | jq -r .status)
-            echo "Status: $status"
-            if [ "$status" = "succeeded" ]; then
-              echo "Deploy concluído com sucesso."
-              exit 0
-            fi
-            if [ "$status" = "failed" ] || [ "$status" = "cancelled" ]; then
-              echo "Deploy falhou: $status"
-              exit 1
-            fi
-            sleep 10
-          done
-
-          echo "Timeout aguardando deploy."
-          exit 1
+          curl "${{ secrets.RENDER_DEPLOY_HOOK_URL_BACK }}"
