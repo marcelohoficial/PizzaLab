@@ -11,7 +11,7 @@ const mockUser = {
   },
 };
 
-describe("Página de Login", () => {
+test.describe("Página de Login", () => {
   test("validação de campos obrigatórios", async ({ page }) => {
     await page.goto("http://localhost:5173/login");
     const submitButton = page.locator('button[type="submit"]');
