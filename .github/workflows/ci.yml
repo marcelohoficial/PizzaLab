@@ -40,8 +40,4 @@ jobs:
     steps:
       - name: Trigger deploy on Render
         run: |
-          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_URL_FRONT }}" ]; then
-            echo "RENDER_DEPLOY_HOOK_URL_FRONT not set"
-            exit 1
-          fi
           curl "${{ secrets.RENDER_DEPLOY_HOOK_URL_FRONT }}"
